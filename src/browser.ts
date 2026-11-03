@@ -9,10 +9,68 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let muted = true,
   presses = 0,
   audio: AudioContext | undefined;
-let pressTimer: ReturnType<typeof setTimeout>;
 const reset = q<HTMLButtonElement>('.reset-object');
 const egg = q<HTMLDialogElement>('.egg');
 const sound = q<HTMLButtonElement>('.sound-toggle');
+let heroHeld = false;
+let automaticPress = false;
+
+function showHeroHeld(held: boolean) {
+  heroHeld = held;
+  reset.classList.toggle('is-pressed', held || automaticPress);
+}
+
+function bindReleaseButton(
+  button: HTMLButtonElement,
+  showHeld: (held: boolean) => void,
+  activate: () => void | Promise<void>,
+) {
+  let pointer: number | undefined;
+  let key: string | undefined;
+  const cancel = () => {
+    if (pointer === undefined && !key) return;
+    pointer = undefined;
+    key = undefined;
+    showHeld(false);
+  };
+  button.addEventListener('pointerdown', (event) => {
+    if (!event.isPrimary || event.button !== 0 || pointer !== undefined || key) return;
+    pointer = event.pointerId;
+    button.setPointerCapture(pointer);
+    showHeld(true);
+  });
+  button.addEventListener('pointerup', (event) => {
+    if (event.pointerId !== pointer) return;
+    const bounds = button.getBoundingClientRect();
+    const inside = event.clientX >= bounds.left && event.clientX <= bounds.right
+      && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+    cancel();
+    if (inside) void activate();
+  });
+  button.addEventListener('pointercancel', cancel);
+  button.addEventListener('lostpointercapture', cancel);
+  button.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    if (event.repeat || pointer !== undefined || key) return;
+    key = event.key;
+    showHeld(true);
+  });
+  button.addEventListener('keyup', (event) => {
+    if (event.key !== key) return;
+    event.preventDefault();
+    cancel();
+    void activate();
+  });
+  button.addEventListener('blur', cancel);
+  window.addEventListener('blur', cancel);
+  // Assistive technology can activate a button without a pointer/key sequence.
+  // Ignore the native click following pointerup; that release already acted.
+  button.addEventListener('click', (event) => {
+    if (event.detail !== 0 || (event instanceof PointerEvent && event.pointerType)) return;
+    if (pointer === undefined && !key) void activate();
+  });
+}
 
 export function thunk() {
   if (muted || !audio) return;
@@ -29,9 +87,6 @@ export function thunk() {
   osc.stop(audio.currentTime + 0.12);
 }
 async function press() {
-  reset.classList.add('is-pressed');
-  clearTimeout(pressTimer);
-  pressTimer = setTimeout(() => reset.classList.remove('is-pressed'), 120);
   if (!muted) {
     audio ??= new AudioContext();
     thunk();
@@ -44,8 +99,8 @@ async function press() {
   await begin();
   motion!.scrollToStory('#prequel');
 }
-reset.addEventListener('click', press);
-q('.press-label').addEventListener('click', press);
+bindReleaseButton(reset, showHeroHeld, press);
+bindReleaseButton(q<HTMLButtonElement>('.press-label'), showHeroHeld, press);
 sound.addEventListener('click', () => {
   muted = !muted;
   if (!muted) audio ??= new AudioContext();
@@ -77,6 +132,8 @@ const shipDays = new Set(
 );
 let current = 0,
   raf = 0;
+let hudAutomaticPress = false;
+let hudReleaseTimer: ReturnType<typeof setTimeout>;
 function roll(selector: string, value: number) {
   const counter = q(selector);
   counter.dataset.value = String(value);
@@ -103,10 +160,16 @@ function update() {
     roll('.ship-count', ships);
     roll('.reset-count', day - ships);
     const isReset = day > 0 && !shipDays.has(day);
+    current = day;
     hud.classList.toggle('hud--reset', isReset);
     hud.classList.toggle('hud--ship', !isReset);
-    q<HTMLImageElement>('.hud img').src =
-      `/images/button-${isReset ? 'down' : 'up'}.webp`;
+    clearTimeout(hudReleaseTimer);
+    hudAutomaticPress = isReset && !reduced.matches;
+    showHudHeld(q('.hud-button').classList.contains('is-pressed'));
+    if (hudAutomaticPress) hudReleaseTimer = setTimeout(() => {
+      hudAutomaticPress = false;
+      showHudHeld(q('.hud-button').classList.contains('is-pressed'));
+    }, 180);
     if (!reduced.matches) {
       q(isReset ? '.reset-count' : '.ship-count').animate(
         [
@@ -126,7 +189,6 @@ function update() {
           { duration: 140 },
         );
     }
-    current = day;
   }
   raf = 0;
 }
@@ -138,7 +200,11 @@ addEventListener(
   { passive: true },
 );
 addEventListener('resize', update);
-q('.hud-button').addEventListener('click', async () => {
+function showHudHeld(held: boolean) {
+  q('.hud-button').classList.toggle('is-pressed', held);
+  q<HTMLImageElement>('.hud img').src = `/images/button-${held || hudAutomaticPress ? 'down' : 'up'}.webp`;
+}
+bindReleaseButton(q<HTMLButtonElement>('.hud-button'), showHudHeld, async () => {
   await begin();
   const next = days.find((day) => day.day > current && day.type === 'reset');
   motion!.scrollToStory('#day-' + (next?.day ?? 2), true);
@@ -152,12 +218,14 @@ function finalPress() {
   finalPlayed = true;
   const lastReset = q('.credits-reset');
   lastReset.classList.add('is-pressed');
-  reset.classList.add('is-pressed');
+  automaticPress = true;
+  showHeroHeld(heroHeld);
   thunk();
   lastReset.dataset.pressed = 'true';
   setTimeout(() => {
     lastReset.classList.remove('is-pressed');
-    reset.classList.remove('is-pressed');
+    automaticPress = false;
+    showHeroHeld(heroHeld);
   }, 280);
 }
 function begin() {

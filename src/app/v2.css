@@ -1254,3 +1254,6 @@
 .chat-reply>div{position:relative}.typing{position:absolute;left:0;top:20px}@media(max-width:700px){.typing{top:0}}
 /* Overshooting stamps and flung cards must not widen a phone's layout viewport. */
 html,body{max-width:100%;overflow-x:clip}
+/* Reset controls behave as held buttons, rather than draggable images/text. */
+.reset-object,.hud-button,.press-label{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.reset-object img,.hud-button img{pointer-events:none;-webkit-user-drag:none;user-select:none}
