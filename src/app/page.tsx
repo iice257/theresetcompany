@@ -9,20 +9,24 @@ import { Memes } from '@/components/sections/Memes';
 import { Credits } from '@/components/sections/Credits';
 import { Footer } from '@/components/sections/Footer';
 
-export default function Home(){
-  return <>
-    <a className="skip-link" href="#prequel">Skip to the story</a>
-    <main id="story">
-      <Hero/>
-      <Prequel/>
-      <Cartoon/>
-      <Weeks/>
-      <Domains/>
-      <Graduation/>
-      <Finale/>
-      <Memes/>
-      <Credits/>
-    </main>
-    <Footer/>
-  </>;
+export default function Home() {
+  return (
+    <>
+      <a className="skip-link" href="#prequel">
+        Skip to the story
+      </a>
+      <main id="story">
+        <Hero />
+        <Prequel />
+        <Cartoon />
+        <Weeks />
+        <Domains />
+        <Graduation />
+        <Finale />
+        <Memes />
+        <Credits />
+      </main>
+      <Footer />
+    </>
+  );
 }

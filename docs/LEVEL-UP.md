@@ -107,8 +107,11 @@ Also:
 
 ## Done means
 
-- [ ] Walk the full page at 375×812 and 1440×900. Every P0 and P1 item is visibly working. Record a short screen capture or GIF of the cartoon pin, Day 2, Day 18 and graduation on mobile.
-- [ ] Mobile page height is ≤14,000px.
-- [ ] Lighthouse mobile scores are pasted into the PR or commit message.
-- [ ] Reduced motion is checked (emulate it in DevTools).
-- [ ] `npm run build` and `npm run check:content` pass.
+- [x] Walk the full page at 375×812 and 1440×900. Every P0 and P1 item is visibly working. Record a short screen capture or GIF of the cartoon pin, Day 2, Day 18 and graduation on mobile.
+- [x] Mobile page height is ≤14,000px.
+- [x] Lighthouse mobile scores are pasted into the PR or commit message.
+- [x] Reduced motion is checked (emulate it in DevTools).
+- [x] `npm run build` and `npm run check:content` pass.
+
+
+Completion evidence: [v2 verification](VERIFICATION-V2.md) and the four [mobile recordings](evidence/). Lighthouse scores are included in the final implementation commit message.

@@ -31,4 +31,12 @@ Replace both `public/images/button-up.webp` and `button-down.webp` to update the
 
 ## Static delivery
 
-Next.js renders the page and metadata. The build then removes framework hydration and router scripts from exported HTML and adds one bundled TypeScript enhancement (`src/browser.ts`). This keeps the complete runtime, including GSAP, ScrollTrigger, Lenis and the analytics integration, under the 150KB gzip budget. No React hydration is needed for this one-page editorial. Use the full `npm run build` command, not `next build` alone. Local analytics is disabled; the single `@vercel/analytics` integration activates on the deployed hostname.
+Next.js renders the page and metadata. The build removes framework hydration and router scripts from exported HTML and adds a small TypeScript entry (`src/browser.ts`). Choreography downloads after the first interaction, through `src/motion.ts`, `src/gags.ts` and `src/polish.ts`. The complete runtime, including GSAP, ScrollTrigger, Lenis and analytics, stays under 150KB gzip. No React hydration is needed. Use the full `npm run build` command, not `next build` alone. Local analytics is disabled; the single `@vercel/analytics` integration activates on the deployed hostname.
+
+## v2 story and evidence
+
+The v2 brief is [docs/LEVEL-UP.md](docs/LEVEL-UP.md). Section components live in `src/components/sections/`; day-specific stacks, captions and gags are typed content in `src/content/days.ts`. Feature threads expand to reveal additional original posts. Quiet days form compact weekly ledgers.
+
+The mobile cartoon scene reserves its pin space before it is animated. The same timeline drives both layouts. Reduced motion removes pinning and exposes every frame as ordinary document content. The HUD is a 44px top bar on phones and a left scoreboard on desktop. The card interlude supports touch, mouse and a keyboard-accessible deal button.
+
+Mobile recordings of the cartoon, Day 2, Day 18 and graduation are in [docs/evidence](docs/evidence). See [v2 verification](docs/VERIFICATION-V2.md) for measured page heights, Lighthouse results and interaction checks.
