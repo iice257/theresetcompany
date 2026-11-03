@@ -8,14 +8,18 @@ out.mkdir(parents=True,exist_ok=True)
 pair=Image.open(root/'assets/design/button-pair-raw.png')
 for name,x in [('up',0),('down',724)]:
     part=pair.crop((x,250,x+724,990))
-    part.thumbnail((520,532))
+    part=part.resize((520,532))
+    if name=='down':
+        aligned=Image.new('RGBA',part.size)
+        aligned.paste(part,(18,0))
+        part=aligned
     part.save(out/f'button-{name}.webp',quality=82)
 for p in (root/'assets/captures').glob('*.png'):
     im=Image.open(p)
     im.thumbnail((1400,1100))
     im.save(out/(p.stem+'.webp'),quality=78)
 im=Image.open(root/'assets/captures/01-poteto-cartoon-large-view.png')
-im.crop((22,45,1715,1075)).resize((1400,852)).save(out/'cartoon.webp',quality=82)
+im.crop((22,45,1715,1075)).resize((1400,852)).save(out/'cartoon.webp',quality=72)
 im=Image.open(root/'assets/design/reset-card.png')
 im.crop((190,150,1345,860)).resize((800,492)).save(out/'reset-card.webp',quality=83)
 avatars=root/'public/avatars'

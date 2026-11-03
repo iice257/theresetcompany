@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { gzipSync } from 'node:zlib';
 const days=readFileSync('src/content/days.ts','utf8');
 const posts=readFileSync('src/content/posts.ts','utf8');
 const shipMatch=days.match(/new Set\(\[([^\]]+)\]/)![1].split(',').map(Number);
@@ -14,4 +15,9 @@ assert(statSync('public/images/button-up.webp').size<120*1024);
 assert(statSync('public/images/button-down.webp').size<120*1024);
 assert(!posts.includes('Shipped before the coffee cooled'));
 assert(!posts.includes('something questionable'));
+const html=readFileSync('out/index.html','utf8');
+assert.equal((html.match(/<script\b/g)||[]).length,1,'Static export must load one enhancement script');
+assert(html.includes('src="/story.js"'));
+assert(!html.includes('self.__next_f'));
+assert(gzipSync(readFileSync('public/story.js')).length<=150*1024,'Full browser JS exceeds 150KB gzip');
 console.log('PASS: 28 unique day links, 15 ships / 13 resets, two banked resets, image budgets and placeholder sweep.');
