@@ -2,6 +2,8 @@ import { inject } from '@vercel/analytics';
 import { SITE_URL } from './content/site';
 import { days } from './content/days';
 import { initMotion, scrollToStory } from './motion';
+import { initCardFling } from './gags';
+import { initDisclosures, initDomainDots } from './polish';
 
 const q = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -36,15 +38,15 @@ sound.addEventListener('click', () => {
   muted = !muted;
   if (!muted) audio ??= new AudioContext();
   sound.setAttribute('aria-pressed', String(!muted));
-  sound.innerHTML = `SOUND ${muted ? 'OFF' : 'ON'} <span aria-hidden="true">${muted ? 'â—‹' : 'â—‰'}</span>`;
+  sound.innerHTML = `SOUND ${muted ? 'OFF' : 'ON'} <span aria-hidden="true">${muted ? '○' : '◉'}</span>`;
 });
 q('.egg-close').addEventListener('click', () => egg.close());
 q('.egg .text-link').addEventListener('click', () => egg.close());
 q('.copy-link').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(SITE_URL);
-    q('.copy-link').textContent = 'LINK COPIED âœ“'; q('.copy-status').textContent = 'Link copied';
-    setTimeout(() => { q('.copy-link').textContent = 'COPY LINK â†—'; q('.copy-status').textContent = ''; }, 2500);
+    q('.copy-link').textContent = 'LINK COPIED ✓'; q('.copy-status').textContent = 'Link copied';
+    setTimeout(() => { q('.copy-link').textContent = 'COPY LINK ↗'; q('.copy-status').textContent = ''; }, 2500);
   } catch { const input = q<HTMLInputElement>('.copy-fallback'); input.hidden = false; input.focus(); input.select(); }
 });
 
@@ -88,10 +90,22 @@ q('.hud-button').addEventListener('click', () => {
 update();
 
 let started = false;
-function begin() { if (started) return; started = true; initMotion(); }
+let finalPlayed = false;
+function finalPress() {
+  if (finalPlayed || reduced.matches) return;
+  finalPlayed = true;
+  const lastReset = q('.credits-reset');
+  lastReset.classList.add('is-pressed'); reset.classList.add('is-pressed'); thunk();
+  lastReset.dataset.pressed = 'true';
+  setTimeout(() => { lastReset.classList.remove('is-pressed'); reset.classList.remove('is-pressed'); }, 280);
+}
+function begin() { if (started) return; started = true; initMotion(finalPress); }
 addEventListener('pointerdown', begin, { once: true, passive: true });
 addEventListener('keydown', begin, { once: true });
 addEventListener('wheel', begin, { once: true, passive: true });
 addEventListener('scroll', begin, { once: true, passive: true });
-reduced.addEventListener('change', () => { if (started) initMotion(); });
+reduced.addEventListener('change', () => { if (started) initMotion(finalPress); });
+initCardFling();
+initDisclosures();
+initDomainDots();
 if (location.hostname !== '127.0.0.1' && location.hostname !== 'localhost') inject({ mode: 'production' });

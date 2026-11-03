@@ -1,6 +1,8 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
+import { initGags, formatCount } from './gags';
+import { initPolishMotion } from './polish';
 
 gsap.registerPlugin(ScrollTrigger);
 let context: gsap.Context | undefined;
@@ -51,25 +53,27 @@ function cartoonSequence() {
 }
 
 function prequelThread() {
+  const thread = gsap.timeline({ scrollTrigger: { trigger: '.chat-thread', start: 'top 90%', once: true } });
   gsap.utils.toArray<HTMLElement>('.chat-reply').forEach((reply, i) => {
     const text = reply.querySelector('.chat-text');
     const typing = reply.querySelector('.typing');
     gsap.set(text, { opacity: 0 });
     gsap.set(typing, { display: 'inline-flex', opacity: 0 });
-    const tl = gsap.timeline({ scrollTrigger: { trigger: reply, start: 'top 92%', once: true }, delay: i * .06 });
-    tl.to(typing, { opacity: 1, duration: .1 }).to({}, { duration: .4 }).set(typing, { display: 'none' }).to(text, { opacity: 1, duration: .16 });
+    thread.to(typing, { opacity: 1, duration: .05 }).to({}, { duration: .4 }).set(typing, { display: 'none' }).to(text, { opacity: 1, duration: .12 });
   });
 }
 
-export function initMotion() {
+export function initMotion(finalPress: () => void) {
   context?.revert();
   lenis?.destroy();
   lenis = undefined;
   document.documentElement.classList.toggle('reduced-motion', reduced.matches);
   document.documentElement.classList.toggle('motion-ready', !reduced.matches);
   document.querySelectorAll<HTMLElement>('.cartoon-frame').forEach(frame => { frame.inert = false; frame.removeAttribute('aria-hidden'); });
+  document.querySelectorAll<HTMLElement>('[data-count-to]').forEach(el => { el.textContent = formatCount(Number(el.dataset.countTo)); });
+  document.querySelectorAll('[data-stamp-scene]').forEach(scene => { delete (scene as HTMLElement).dataset.stamped; scene.querySelectorAll('.ship-check').forEach(check => { check.textContent = '✓'; }); });
   if (reduced.matches) return;
-  context = gsap.context(() => { cartoonSequence(); prequelThread(); });
+  context = gsap.context(() => { cartoonSequence(); prequelThread(); initGags(finalPress); initPolishMotion(); });
   if (matchMedia('(pointer: fine)').matches) lenis = new Lenis({ autoRaf: true, duration: .85, anchors: true });
   ScrollTrigger.refresh();
 }
