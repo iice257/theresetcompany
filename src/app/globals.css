@@ -7,3 +7,5 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reset-object:hover{transform:none}.hud{transition:none}.reset-deck img:first-child{transform:rotate(-8deg)}.reset-deck img:last-child{transform:rotate(8deg)}}
 .tag--reset{color:#000}.egg{margin:0;color:var(--ink)}.egg:not([open]){display:none}.egg::backdrop{background:#14141499}.egg[open]{display:block;box-shadow:none}.reset-deck img:nth-child(2){cursor:grab}@media(max-width:700px){.hero h1 span:last-child{font-size:26.3vw}.hero h1{margin-bottom:20px}.hero-control{margin-top:12px}.hero{padding-bottom:24px}}
 .feature-summary{font-size:21px;max-width:760px;margin:-4px 0 22px;color:var(--muted)}
+
+

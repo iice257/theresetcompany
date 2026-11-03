@@ -3,6 +3,7 @@ import { Anton, Newsreader, IBM_Plex_Mono } from 'next/font/google';
 
 import { SITE_URL } from '@/content/site';
 import './globals.css';
+import './v2.css';
 const anton=Anton({subsets:['latin'],weight:'400',display:'swap',variable:'--font-anton'});
 const news=Newsreader({subsets:['latin'],style:['normal','italic'],weight:'400',display:'swap',variable:'--font-news'});
 const mono=IBM_Plex_Mono({subsets:['latin'],weight:['400','500'],display:'swap',variable:'--font-mono'});
